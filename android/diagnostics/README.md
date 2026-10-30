@@ -48,3 +48,9 @@ SAF JSON export uses a unique filename and attempts exact-byte read-back after w
 The scan now also includes exposed block-device/eMMC metadata, network-interface names/state and SELinux enforcement status; it avoids storage serial numbers and network addresses. These remain partial app-visible observations.
 
 Host tests verify detection of empty, truncated, extended and corrupted exports. Actual SAF providers, USB copying, process recreation, screen fit and scan performance still require a real-device test. Recreate the app while the picker is open and complete the export as part of that test. A very old or defective OEM framework can still block a native/framework read despite command timeouts.
+
+## USB / folder export (0.3.1)
+
+**Export JSON…** opens a save-file picker. **Save JSON to USB / folder…** opens Android's folder picker: select a USB folder when the OEM exposes the mounted drive there, grant folder access, and the app creates a uniquely named JSON document and verifies it by reading it back. It does not format, unmount or change any drive settings, and does not retain folder permission for later sessions.
+
+If the USB drive is visible only in the manufacturer's file manager, use **Save local copy for file manager**, note the displayed path, then copy that file to USB with the manufacturer's manager. Direct USB visibility depends on the firmware and its document providers; the app cannot guarantee it. Cancellation returns without exporting. Add tests of selecting a USB folder, cancellation, removal of USB during export and reopening the JSON on a computer to the device acceptance checklist.

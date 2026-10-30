@@ -6,33 +6,35 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.DocumentsContract;
 import android.widget.*;
 import org.json.JSONObject;
 import java.io.*;
 
 public final class MainActivity extends Activity {
-    private static final int CREATE_JSON=101;
+    private static final int CREATE_JSON=101, CHOOSE_FOLDER=102;
     private static final java.util.concurrent.atomic.AtomicBoolean BUSY=new java.util.concurrent.atomic.AtomicBoolean();
     private JSONObject report;
     private boolean exporting;
     private TextView details;
-    private Button scan,rootTest,export,local;
+    private Button scan,rootTest,export,usb,local;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(dp(16),dp(12),dp(16),dp(12));
-        TextView title=new TextView(this);title.setText("OpenDash Diagnostics 0.3");title.setTextSize(22);title.setTypeface(null,Typeface.BOLD);root.addView(title);
+        TextView title=new TextView(this);title.setText("OpenDash Diagnostics 0.3.1");title.setTextSize(22);title.setTypeface(null,Typeface.BOLD);root.addView(title);
         TextView intro=new TextView(this);intro.setText("Read-only hardware inventory. Driver presence does not prove function. The last report is kept privately in this app. Review identifiers before sharing.");root.addView(intro);
         scan=button("Scan capabilities & drivers");root.addView(scan);
         rootTest=button("Scan + test root (su -c id)");root.addView(rootTest);
         export=button("Export JSON…");root.addView(export);
-        local=button("Save local JSON copy (file-picker fallback)");root.addView(local);
+        usb=button("Save JSON to USB / folder…");root.addView(usb);
+        local=button("Save local copy for file manager");root.addView(local);
         details=new TextView(this);details.setTextIsSelectable(true);details.setTextSize(13);details.setTypeface(Typeface.MONOSPACE);root.addView(details);
         ScrollView page=new ScrollView(this);page.addView(root);setContentView(page);
         setEnabled(false);details.setText("Loading last report…");
         scan.setOnClickListener(v->collect(false));rootTest.setOnClickListener(v->collect(true));
-        export.setOnClickListener(v->prepareExport());local.setOnClickListener(v->saveLocal());
+        export.setOnClickListener(v->prepareExport(false));usb.setOnClickListener(v->prepareExport(true));local.setOnClickListener(v->saveLocal());
         new Thread(()->{
             JSONObject old=null;
             try {old=new JSONObject(ReportFiles.load(this,"last-report.json"));} catch(Exception ignored) { }
@@ -42,7 +44,7 @@ public final class MainActivity extends Activity {
     }
     private void setEnabled(boolean enabled) {
         scan.setEnabled(enabled);rootTest.setEnabled(enabled);
-        export.setEnabled(enabled && report!=null);local.setEnabled(enabled && report!=null);
+        export.setEnabled(enabled && report!=null);usb.setEnabled(enabled && report!=null);local.setEnabled(enabled && report!=null);
     }
     private void showReport(JSONObject value,String empty) {
         if(value==null){details.setText(empty);return;}
@@ -65,7 +67,7 @@ public final class MainActivity extends Activity {
     private String fileName(JSONObject value) {
         return "opendash-"+value.optString("reportId","report")+".json";
     }
-    private void prepareExport() {
+    private void prepareExport(boolean folder) {
         if(report==null)return; final JSONObject selected=report;setEnabled(false);
         new Thread(()->{
             String error=null;
@@ -74,21 +76,30 @@ public final class MainActivity extends Activity {
             runOnUiThread(()->{
                 if(isDestroyed())return;setEnabled(true);
                 if(failure!=null){Toast.makeText(this,"Cannot prepare export: "+failure,Toast.LENGTH_LONG).show();return;}
-                Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json");
-                intent.putExtra(Intent.EXTRA_TITLE,fileName(selected));
-                try {startActivityForResult(intent,CREATE_JSON);}
-                catch(android.content.ActivityNotFoundException e){Toast.makeText(this,"No system file picker. Use Save local JSON copy.",Toast.LENGTH_LONG).show();}
+                Intent intent;
+                if(folder)intent=new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                else intent=new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json").putExtra(Intent.EXTRA_TITLE,fileName(selected));
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                try {startActivityForResult(intent,folder?CHOOSE_FOLDER:CREATE_JSON);}
+                catch(android.content.ActivityNotFoundException e){Toast.makeText(this,"No compatible picker. Save a local copy and copy it to USB with your file manager.",Toast.LENGTH_LONG).show();}
             });
         },"opendash-prepare-export").start();
     }
     @Override protected void onActivityResult(int request,int result,Intent data) {
         super.onActivityResult(request,result,data);
-        if(request!=CREATE_JSON || result!=RESULT_OK || data==null || data.getData()==null)return;
-        final Uri uri=data.getData();exporting=true;setEnabled(false);
+        if((request!=CREATE_JSON && request!=CHOOSE_FOLDER) || result!=RESULT_OK || data==null || data.getData()==null)return;
+        final Uri selectedUri=data.getData();final boolean folder=request==CHOOSE_FOLDER;exporting=true;setEnabled(false);
         new Thread(()->{
             String message;
             try {
-                byte[] bytes=ReportFiles.load(this,"pending-export.json").getBytes("UTF-8");
+                String snapshot=ReportFiles.load(this,"pending-export.json");
+                byte[] bytes=snapshot.getBytes("UTF-8");
+                Uri uri=selectedUri;
+                if(folder) {
+                    Uri parent=DocumentsContract.buildDocumentUriUsingTree(selectedUri,DocumentsContract.getTreeDocumentId(selectedUri));
+                    uri=DocumentsContract.createDocument(getContentResolver(),parent,"application/json",fileName(new JSONObject(snapshot)));
+                    if(uri==null)throw new IOException("Folder provider did not create the file");
+                }
                 try(OutputStream out=getContentResolver().openOutputStream(uri,"wt")) {
                     if(out==null)throw new IOException("No stream");out.write(bytes);out.flush();
                 }
