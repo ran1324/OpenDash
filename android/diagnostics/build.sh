@@ -3,7 +3,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 SDK="${ANDROID_HOME:-/opt/homebrew/share/android-commandlinetools}"
 BUILD_TOOLS="${ANDROID_BUILD_TOOLS:-$SDK/build-tools/34.0.0}"
-PLATFORM="${ANDROID_PLATFORM_JAR:-$SDK/platforms/android-34/android.jar}"
+PLATFORM="${ANDROID_PLATFORM_JAR:-$SDK/platforms/android-27/android.jar}"
 JAVAC="${JAVAC:-/opt/homebrew/opt/openjdk@17/bin/javac}"
 KEYTOOL="${KEYTOOL:-/opt/homebrew/opt/openjdk@17/bin/keytool}"
 mkdir -p build/classes build/dex build/release

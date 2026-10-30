@@ -31,6 +31,9 @@ final class ExtendedDiagnostics {
         devices(sys,"/sys/class/graphics",new String[]{"name","virtual_size","bits_per_pixel"},8);
         devices(sys,"/sys/class/video4linux",new String[]{"name"},16);
         devices(sys,"/sys/devices/system/cpu/cpufreq",new String[]{"scaling_driver","scaling_governor","cpuinfo_max_freq","cpuinfo_min_freq","scaling_available_frequencies"},16);
+        devices(sys,"/sys/block",new String[]{"size","queue/logical_block_size","device/name","device/type","device/manfid","device/oemid","device/fwrev"},32);
+        devices(sys,"/sys/class/net",new String[]{"type","operstate"},16);
+        Diagnostics.readField(sys,"selinuxEnforce","/sys/fs/selinux/enforce",32);
         JSONObject services = Diagnostics.section(report,"services");
         command(services,"binderServices",new String[]{"/system/bin/service","list"});
         command(services,"dumpServiceNames",new String[]{"/system/bin/dumpsys","-l"});
@@ -99,6 +102,7 @@ final class ExtendedDiagnostics {
         try {
             CameraManager cm=(CameraManager)c.getSystemService(Context.CAMERA_SERVICE);
             String[] ids=cm.getCameraIdList();
+            if(ids.length>16)Diagnostics.status(out,"characteristicsLimit","partial","Characteristics limited to first 16 cameras");
             Diagnostics.field(out,"ids",new JSONArray(Arrays.asList(ids)),"CameraManager; cameras are not opened; OEM reverse camera may be separate");
             for(int i=0;i<Math.min(ids.length,16);i++) try {
                 CameraCharacteristics cc=cm.getCameraCharacteristics(ids[i]); JSONObject info=new JSONObject();
@@ -111,7 +115,9 @@ final class ExtendedDiagnostics {
     private static void usb(Context c,JSONObject out) {
         try {
             UsbManager um=(UsbManager)c.getSystemService(Context.USB_SERVICE); JSONArray devices=new JSONArray();
-            for(UsbDevice d:um.getDeviceList().values()) {
+            Map<String,UsbDevice> visible=um.getDeviceList();
+            if(visible.size()>64)Diagnostics.status(out,"limit","partial","First 64 USB devices only");
+            for(UsbDevice d:visible.values()) {
                 if(devices.length()>=64) break;
                 JSONObject item=new JSONObject(); Diagnostics.put(item,"vendorId",d.getVendorId()); Diagnostics.put(item,"productId",d.getProductId());
                 Diagnostics.put(item,"deviceClass",d.getDeviceClass()); Diagnostics.put(item,"interfaceCount",d.getInterfaceCount()); devices.put(item);

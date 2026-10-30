@@ -45,7 +45,9 @@ final class Diagnostics {
 
     static JSONObject collect(Activity activity, boolean testRoot) {
         JSONObject report = new JSONObject();
-        put(report, "schemaVersion", 2);
+        put(report, "schemaVersion", 3);
+        put(report,"reportId",java.util.UUID.randomUUID().toString());
+        put(report,"toolVersion","0.3");
         long started = android.os.SystemClock.elapsedRealtime();
         put(report, "generatedAtUtc", new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US) {{ setTimeZone(java.util.TimeZone.getTimeZone("UTC")); }}.format(new java.util.Date()));
         put(report, "scope", "Read-only app observations. Missing and denied values are not negative findings. No firmware image or personal app list is collected.");
