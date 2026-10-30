@@ -4,7 +4,7 @@
 
 OpenDash is a planned, lightweight, source-available automotive infotainment system for modernizing existing car head units.
 
-> **Project status: planning and research.** There is no functional release or verified hardware compatibility yet.
+> **Project status: planning and research.** An Android diagnostics prototype is available; the full infotainment system and hardware compatibility remain unverified.
 
 ## Vision
 
@@ -25,6 +25,10 @@ A fast, elegant, driver-friendly touchscreen experience with large icons, a cloc
 A lightweight Linux system with a touch-first UI (potentially Qt/QML), hardware abstraction layers, and modular services. Initial prototypes will run on desktop and Raspberry Pi. Existing Android head-unit compatibility will require hardware-specific research.
 
 Early research includes the Nakamichi NAM5210 family and a unit reporting MAZDA3_W01 / NK11 / CVD1810-WJ; compatibility is **not verified**.
+
+The currently documented research unit and the proposed emulator workflow are described in [Nakamichi NAM5210-A9 research](docs/nam5210-a9-research.md). This work focuses on the installed head unit; the Raspberry Pi direction in the roadmap is deferred for this investigation.
+
+The first installable component is [OpenDash Diagnostics](android/diagnostics/README.md), a read-only API 27 app that exports a hardware and Android report through the system file picker. Its presence does not establish firmware compatibility. Download the test APK from [Diagnostics releases](https://github.com/ran1324/OpenDash/releases/tag/diagnostics-v0.2.0).
 
 ## Roadmap and contributions
 
