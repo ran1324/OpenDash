@@ -45,9 +45,9 @@ final class Diagnostics {
 
     static JSONObject collect(Activity activity, boolean testRoot) {
         JSONObject report = new JSONObject();
-        put(report, "schemaVersion", 3);
+        put(report, "schemaVersion", 4);
         put(report,"reportId",java.util.UUID.randomUUID().toString());
-        put(report,"toolVersion","0.3.1");
+        put(report,"toolVersion","0.4");
         long started = android.os.SystemClock.elapsedRealtime();
         put(report, "generatedAtUtc", new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US) {{ setTimeZone(java.util.TimeZone.getTimeZone("UTC")); }}.format(new java.util.Date()));
         put(report, "scope", "Read-only app observations. Missing and denied values are not negative findings. No firmware image or personal app list is collected.");
@@ -176,8 +176,9 @@ final class Diagnostics {
             if (result == null) status(root, "suId", "unavailable", "su could not start or timed out; permission prompt may need manual response");
             else if (result.exitCode == 0 && java.util.regex.Pattern.compile("(?m)^uid=0(?:\\(|\\s|$)").matcher(result.output).find()) field(root, "suId", "uid=0 confirmed", "su -c id; read-only probe");
             else status(root, "suId", "not_confirmed", "su exited " + result.exitCode + "; no uid=0 confirmation");
-        } else status(root, "suId", "not_tested", "Tap Test root to run su -c id; it may show a permission prompt");
+        } else status(root, "suId", "not_tested", "Tap Scan + optional root identity reads; su may show a permission prompt");
         ExtendedDiagnostics.collect(activity, report);
+        HardwareIdentity.collect(report, props, "uid=0 confirmed".equals(root.optJSONObject("suId").optString("value")));
         field(section(report,"collection"),"elapsedMilliseconds",android.os.SystemClock.elapsedRealtime()-started,"Monotonic elapsed time; not a benchmark");
         return report;
     }

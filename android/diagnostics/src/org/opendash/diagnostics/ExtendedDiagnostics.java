@@ -50,7 +50,7 @@ final class ExtendedDiagnostics {
         Diagnostics.field(coverage,"evidenceLevels","Declared features, enumerated components and readable metadata are inventory evidence. OpenGL context creation and optional su identity are the only active probes.","Collector design");
         for(String item:new String[]{"MCU firmware/protocol","CAN box communication","reverse-camera trigger/video","radio reception","steering-wheel controls","Bluetooth pairing/calls","audio playback/microphone","GPS fix","touch accuracy","suspend/resume and ignition power","kernel driver correctness"})
             Diagnostics.status(coverage,item,"not_tested","Requires device-specific integration or a supervised functional test; absence from app-visible inventories is inconclusive");
-        Diagnostics.field(coverage,"limits","No recursive filesystem scan. Each bus: 64 devices; lists: 256 entries; attribute: 4 KiB; commands: 3 seconds/128 KiB. No root inventory. Built-in drivers need not appear in /proc/modules. OEM camera/radio/CAN paths may bypass Android APIs.","Scan limits");
+        Diagnostics.field(coverage,"limits","No recursive filesystem scan. Each bus: 64 devices; lists: 256 entries; attribute: 4 KiB; commands: 3 seconds/128 KiB. Broad inventories use app permissions; optional root reads cover only fixed CPU/board identity paths. Built-in drivers need not appear in /proc/modules. OEM camera/radio/CAN paths may bypass Android APIs.","Scan limits");
     }
     private static void devices(JSONObject out,String path,String[] attrs,int cap) {
         JSONObject inventory=new JSONObject();

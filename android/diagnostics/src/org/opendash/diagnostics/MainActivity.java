@@ -23,10 +23,10 @@ public final class MainActivity extends Activity {
         super.onCreate(state);
         LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(dp(16),dp(12),dp(16),dp(12));
-        TextView title=new TextView(this);title.setText("OpenDash Diagnostics 0.3.1");title.setTextSize(22);title.setTypeface(null,Typeface.BOLD);root.addView(title);
+        TextView title=new TextView(this);title.setText("OpenDash Diagnostics 0.4");title.setTextSize(22);title.setTypeface(null,Typeface.BOLD);root.addView(title);
         TextView intro=new TextView(this);intro.setText("Read-only hardware inventory. Driver presence does not prove function. The last report is kept privately in this app. Review identifiers before sharing.");root.addView(intro);
         scan=button("Scan capabilities & drivers");root.addView(scan);
-        rootTest=button("Scan + test root (su -c id)");root.addView(rootTest);
+        rootTest=button("Scan + optional root identity reads");root.addView(rootTest);
         export=button("Export JSON…");root.addView(export);
         usb=button("Save JSON to USB / folder…");root.addView(usb);
         local=button("Save local copy for file manager");root.addView(local);
@@ -50,6 +50,9 @@ public final class MainActivity extends Activity {
         if(value==null){details.setText(empty);return;}
         String text;try{text=value.toString(2);}catch(Exception e){text=value.toString();}
         if(text.length()>65536)text=text.substring(0,65536)+"\n[Preview limited; export contains the full collected report.]";
+        JSONObject identity=value.optJSONObject("hardwareIdentity");
+        if(identity!=null)try{text="CPU / BOARD CROSS-CHECKS\n"+identity.optJSONObject("crossChecks").toString(2)+"\n\nCOLLECTED REPORT\n"+text;}catch(Exception ignored){}
+        if(text.length()>65536)text=text.substring(0,65536)+"\n[Preview limited; export the full report.]";
         details.setText(text);
     }
     private void collect(boolean root) {
