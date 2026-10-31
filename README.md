@@ -24,9 +24,9 @@ A fast, elegant, driver-friendly touchscreen experience with large icons, a cloc
 
 A lightweight Linux system with a touch-first UI (potentially Qt/QML), hardware abstraction layers, and modular services. Initial prototypes will run on desktop and Raspberry Pi. Existing Android head-unit compatibility will require hardware-specific research.
 
-Early research includes the Nakamichi NAM5210 family and a unit reporting MAZDA3_W01 / NK11 / CVD1810-WJ; compatibility is **not verified**.
+The current research unit is a Nakamichi **NAM5210-A9** (box identification) in a 2008 Mazda 3, reporting MAZDA3_W01 / NK11.0 / CVD1810-WJ. Do not treat the NAM5210 without the `-A9` suffix as an identical board; compatibility is **not verified**.
 
-The currently documented research unit and the proposed emulator workflow are described in [Nakamichi NAM5210-A9 research](docs/nam5210-a9-research.md). This work focuses on the installed head unit; the Raspberry Pi direction in the roadmap is deferred for this investigation.
+The [Nakamichi NAM5210-A9 model dossier](docs/nam5210-a9-research.md) combines earlier on-screen observations with two curated on-device diagnostic exports and an emulator plan. The reports confirm an Android 8.1/API 27 base and expose some vehicle-facing services, but do not establish a safe firmware upgrade or a recovery path. This work focuses on the installed head unit; the Raspberry Pi direction in the roadmap is deferred for this investigation.
 
 The first installable component is [OpenDash Diagnostics](android/diagnostics/README.md), a read-only API 27 app that exports a hardware and Android report through the system file picker. Its presence does not establish firmware compatibility. Download the test APK from [Diagnostics releases](https://github.com/ran1324/OpenDash/releases/tag/diagnostics-v0.4.0).
 
