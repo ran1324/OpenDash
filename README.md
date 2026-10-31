@@ -6,6 +6,8 @@ OpenDash is a planned, lightweight, source-available automotive infotainment sys
 
 > **Project status: planning and research.** An Android diagnostics prototype is available; the full infotainment system and hardware compatibility remain unverified.
 
+**Start here:** [Project status and coordinated work plan](PROJECT_STATUS.md). It records the current decisions, evidence, workstreams, acceptance gates, and the single planned parked-car test session.
+
 ## Vision
 
 A fast, elegant, driver-friendly touchscreen experience with large icons, a clock, music, phone, navigation, and settings. We aim to retain existing hardware where practical instead of forcing a complete replacement.
